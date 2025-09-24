@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <meta charset="UTF-8">
+  <title>{{ query }} - Trakire</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    nav {
+      margin-bottom: 15px;
+    }
+    nav a {
+      text-decoration: none;
+      color: #007bff;
+      margin-right: 10px;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 18px;
+      color: #333;
+    }
+    ul {
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-radius: 8px;
+      padding: 18px 22px;
+      margin: 0 0 18px 0;
+      list-style: none;
+    }
+    li {
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    strong {
+      color: #007bff;
+    }
+    a[href*="details_page"] {
+      background-color: #007bff;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-left: 18px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    a[href*="details_page"]:hover {
+      background-color: #0056b3;
+    }
+    .pagination {
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pagination a {
+      color: #007bff;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: #e9f3ff;
+      font-size: 14px;
+    }
+    .pagination a:hover {
+      background: #d0e7ff;
+    }
+    .pagination span {
+      font-size: 15px;
+      color: #555;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #ccc;
+      margin: 18px 0;
+    }
+    p {
+      font-size: 15px;
+      color: #666;
+    }
+    p a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    p a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('home') }}">Job Search</a> |
+    <a href="{{ url_for('view_tracker') }}">My Applications</a>
+  </nav>
+  <hr>
+  <h1>Results for "{{ query }}"</h1>
+
+  {% if jobs %}
+  <ul>
+    {% for job in jobs %}
+    <li>
+      <span>
+      <strong>{{ job.employer_name or 'Unknown Employer' }}</strong>
+      — {{ job.job_title }}
+      </span>
+      <a href="{{ url_for('details_page', job_id=job['job_id']) }}?country={{ country }}">View Details</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('results',
+               query=query,
+               country=country,
+               date_posted=date_posted,
+               employment_types=employment_types,
+               page=page-1) }}">
+      ← Previous
+    </a>
+    {% endif %}
+
+    <span>Page {{ page }}</span>
+    {% if jobs|length >= 10 %}
+    <a href="{{ url_for('results',
+               query=query,
+               country=country,
+               date_posted=date_posted,
+               employment_types=employment_types,
+               page=page+1) }}">
+      Next →
+    </a>
+    {% endif %}
+  </div>
+  {% else %}
+  <p>No jobs found. Try a broader query or different filters.</p>
+  {% endif %}
+
+  <p style="margin-top: 16px;"><a href="{{ url_for('home') }}">New Search</a></p>
+</body>
+</html>

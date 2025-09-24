@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        {% if job %}
+            {{ job['employer_name'] }} - {{ job['job_title'] }} - Trakire
+        {% else %}
+            Job Details - Trakire
+        {% endif %}
+    </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        nav {
+            margin-bottom: 15px;
+        }
+        nav a {
+            text-decoration: none;
+            color: #007bff;
+            margin-right: 10px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        p {
+            font-size: 15px;
+            margin: 8px 0;
+        }
+        strong {
+            color: #333;
+        }
+        pre {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 15px;
+            margin: 10px 0 18px 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+        #apply-link {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 5px;
+            margin-right: 10px;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        #apply-link:hover {
+            background-color: #0056b3;
+        }
+        #add-to-tracker {
+            padding: 7px 16px;
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        #add-to-tracker:hover {
+            background-color: #e60000;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #ccc;
+            margin: 18px 0;
+        }
+        .back-links {
+            margin-top: 25px;
+            font-size: 15px;
+        }
+        .back-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+        .back-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{{ url_for('home') }}">Job Search</a> |
+        <a href="{{ url_for('view_tracker') }}">My Applications</a>
+    </nav>
+    <hr>
+
+    {% if job %}
+        <h1>{{ job['job_title'] }}</h1>
+        <p><strong>Employer:</strong> {{ job['employer_name'] }}</p>
+        <p><strong>Location:</strong> {{ job['job_city'] }}, {{ job['job_country'] }}</p>
+
+        <p><strong>Description:</strong></p>
+        <pre style="white-space: pre-wrap; font-family: inherit;">
+{{ job['job_description'] }}
+        </pre>
+
+        {% if job['job_apply_link'] %}
+            <a href="{{ job['job_apply_link'] }}" target="_blank" id="apply-link">Apply</a>
+            <button id="add-to-tracker">Add to Tracker</button>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                function loadJobsFromLocal() {
+                    const stored = localStorage.getItem("jobs");
+                    if(stored){
+                        try { return JSON.parse(stored); }
+                        catch(e){ return []; }
+                    }
+                    return [];
+                }
+
+                function saveJobsToLocal(jobs) {
+                    localStorage.setItem("jobs", JSON.stringify(jobs));
+                }
+
+                function refreshTracker() {
+                    const jobs = loadJobsFromLocal();
+                    console.log("Current jobs in localStorage:", jobs);
+                }
+
+                const addBtn = document.getElementById("add-to-tracker");
+                if(addBtn){
+                    addBtn.addEventListener("click", () => {
+                        let jobs = loadJobsFromLocal();
+                        const jobId = "{{ job['job_id'] }}";
+                        
+                        if(jobs.some(j=>j.job_id === jobId)){
+                            alert("This job is already in your tracker!");
+                            return;
+                        }
+
+                        const newJob = {
+                            id: Date.now(),
+                            job_id: jobId,
+                            company_name: "{{ job['employer_name'] }}",
+                            role: "{{ job['job_title'] }}",
+                            job_link: "{{ job['job_apply_link'] }}",
+                            source: "{{ job['job_publisher'] }}",
+                            status: "Saved",
+                            date_applied: new Date().toISOString().split('T')[0],
+                            notes: "",
+                            interview_rounds: 0
+                        };
+
+                        jobs.push(newJob);
+                        saveJobsToLocal(jobs);
+                        alert("Job added to tracker!");
+                        refreshTracker();
+                    });
+                }
+            });
+            </script>
+
+        {% endif %}
+    {% else %}
+        <p>Job details not available.</p>
+    {% endif %}
+
+    <div class="back-links">
+        <a href="{{ url_for('home') }}">Back to Search</a> | <a href="{{ url_for('view_tracker') }}">My Tracker</a>
+    </div>
+</body>
+</html>
